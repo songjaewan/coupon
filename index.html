@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>가위바위보 쿠폰 이벤트</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background:#f6f7f9; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 20px; }
+    .card { background:#fff; border-radius:16px; padding:18px; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    .sub { color:#555; margin: 0 0 14px; font-size: 14px; line-height: 1.4; }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px; }
+    button {
+      flex: 1 1 30%;
+      padding: 14px 10px; border: 0; border-radius: 14px;
+      font-size: 18px; cursor: pointer; background:#111; color:#fff;
+    }
+    button:active { transform: scale(.99); }
+    .row { display:flex; gap:12px; margin-top: 14px; flex-wrap:wrap; }
+    .box { flex:1 1 220px; padding:14px; border-radius:14px; background:#f2f4f7; }
+    .label { font-size: 12px; color:#666; margin-bottom: 6px; }
+    .value { font-size: 20px; font-weight: 700; }
+    .result { margin-top: 14px; font-size: 18px; font-weight: 800; }
+    .hint { margin-top: 10px; font-size: 13px; color:#666; line-height:1.4; }
+    .qrWrap { margin-top: 14px; display:none; }
+    .qrCard { background:#fff; border-radius:16px; padding:16px; border:1px solid #e6e8ee; }
+    .couponLine { margin-top:10px; font-size:14px; color:#333; word-break: break-all; }
+    .small { font-size:12px; color:#777; margin-top:8px; line-height:1.4; }
+    .footer { margin-top: 14px; font-size: 12px; color:#888; }
+    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:#eef; color:#224; font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>가위바위보 한 판 🎮</h1>
+      <p class="sub">
+        선택 후 결과에 따라 <b>쿠폰 QR</b>이 생성됩니다.<br/>
+        <span class="pill">무료 데모</span> 운영용으로 문구/쿠폰 정책은 자유롭게 변경하세요.
+      </p>
+
+      <div class="btns">
+        <button onclick="play('가위')">✌️ 가위</button>
+        <button onclick="play('바위')">✊ 바위</button>
+        <button onclick="play('보')">🖐️ 보</button>
+      </div>
+
+      <div class="row">
+        <div class="box">
+          <div class="label">내 선택</div>
+          <div class="value" id="me">-</div>
+        </div>
+        <div class="box">
+          <div class="label">컴퓨터</div>
+          <div class="value" id="cpu">-</div>
+        </div>
+      </div>
+
+      <div class="result" id="result">선택해 주세요.</div>
+
+      <div class="qrWrap" id="qrWrap">
+        <div class="qrCard">
+          <div class="label">쿠폰 QR</div>
+          <div id="qrcode"></div>
+          <div class="couponLine"><b>쿠폰 내용:</b> <span id="couponText">-</span></div>
+          <div class="small" id="couponRule">
+            * QR을 계산대에서 제시해 주세요. (1회 사용 / 당일 유효)
+          </div>
+        </div>
+      </div>
+
+      <div class="hint">
+        운영 팁(무료 운영 기준):<br/>
+        - “꽝 없음” 추천: 방문 전환이 훨씬 좋습니다.<br/>
+        - QR 내용에는 <b>쿠폰종류 + 날짜 + 난수</b>를 넣어두면 현장 통제가 쉬워집니다.
+      </div>
+
+      <div class="footer">
+        © Event Mini Game
+      </div>
+    </div>
+  </div>
+
+  <!-- QRCode.js (무료 CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script>
+    const choices = ['가위','바위','보'];
+
+    // 승/무/패에 따른 쿠폰 정책(원하시면 여기만 바꾸면 됩니다)
+    const couponByOutcome = {
+      WIN:  { name: '음료 1잔 교환권',  code: 'DRINK1' },
+      DRAW: { name: '사이드 1종 50% 할인', code: 'SIDE50' },
+      LOSE: { name: '5% 할인 쿠폰',      code: 'DISC5' }
+    };
+
+    // QR에 담길 데이터(현장 통제용)
+    // 예: INSPIRE|DRINK1|2026-01-07|A1B2C3
+    function buildQrPayload(couponCode){
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      const rand = Math.random().toString(16).slice(2, 8).toUpperCase();
+      return `INSPIRE|${couponCode}|${dateStr}|${rand}`;
+    }
+
+    function judge(me, cpu){
+      if(me === cpu) return 'DRAW';
+      if(
+        (me==='가위' && cpu==='보') ||
+        (me==='바위' && cpu==='가위') ||
+        (me==='보' && cpu==='바위')
+      ) return 'WIN';
+      return 'LOSE';
+    }
+
+    let qr; // QRCode instance
+
+    function play(me){
+      const cpu = choices[Math.floor(Math.random()*3)];
+      document.getElementById('me').textContent = me;
+      document.getElementById('cpu').textContent = cpu;
+
+      const outcome = judge(me, cpu);
+      const cpn = couponByOutcome[outcome];
+
+      const outcomeText = outcome === 'WIN' ? '승리!' : (outcome === 'DRAW' ? '무승부!' : '아쉽게 패배!');
+      document.getElementById('result').textContent = `${outcomeText} 👉 ${cpn.name}`;
+
+      // QR 생성
+      const payload = buildQrPayload(cpn.code);
+      document.getElementById('couponText').textContent = payload;
+      document.getElementById('qrWrap').style.display = 'block';
+
+      // 기존 QR 지우고 새로 생성
+      const el = document.getElementById('qrcode');
+      el.innerHTML = '';
+      qr = new QRCode(el, {
+        text: payload,
+        width: 200,
+        height: 200,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      // 운영 문구(원하시면 수정)
+      document.getElementById('couponRule').textContent =
+        '* QR을 계산대에서 제시해 주세요. (1회 사용 / 당일 유효 / 캡처 사용 가능 여부는 매장 정책)';
+    }
+  </script>
+</body>
+</html>
