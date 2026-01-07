@@ -3,386 +3,660 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>가위바위보 쿠폰 이벤트</title>
+  <title>가위바위보 연승 아케이드 이벤트</title>
+
   <style>
     :root{
-      --bg:#0b1220;
-      --card: rgba(255,255,255,.06);
-      --card2: rgba(255,255,255,.10);
-      --text:#e8eefc;
-      --muted: rgba(232,238,252,.7);
-      --blue:#3b82f6;
-      --red:#ef4444;
-      --win:#22c55e;
-      --draw:#60a5fa;
-      --lose:#94a3b8;
+      --bg:#0b0f1a;
+      --panel:#141a2a;
+      --panel2:#0f1422;
+      --line:#2a3350;
+      --text:#e9eeff;
+      --muted:rgba(233,238,255,.7);
+      --accent:#ffcc4d;
+      --blue:#4aa3ff;
+      --red:#ff5b5b;
+      --green:#3dffb5;
+      --glow: 0 0 14px rgba(255,204,77,.55);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 18px;
     }
     *{ box-sizing:border-box; }
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: radial-gradient(1200px 600px at 20% 10%, rgba(59,130,246,.25), transparent 60%),
-                  radial-gradient(1000px 600px at 80% 20%, rgba(239,68,68,.20), transparent 55%),
-                  radial-gradient(900px 600px at 50% 100%, rgba(34,197,94,.10), transparent 60%),
-                  var(--bg);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background:
+        radial-gradient(900px 600px at 20% 10%, rgba(74,163,255,.18), transparent 60%),
+        radial-gradient(800px 500px at 80% 10%, rgba(255,91,91,.14), transparent 55%),
+        radial-gradient(900px 600px at 50% 90%, rgba(61,255,181,.08), transparent 60%),
+        var(--bg);
       color:var(--text);
-      overflow-x:hidden;
     }
-    .wrap{ max-width:900px; margin:0 auto; padding:22px; }
-    .title{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      margin-bottom:14px;
-    }
-    h1{ margin:0; font-size:22px; letter-spacing:.2px; }
-    .sub{ margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.5; }
-    .pill{ display:inline-block; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.10); font-size:12px; color:var(--text); }
+    .wrap{ max-width: 980px; margin:0 auto; padding: 20px; }
 
-    .board{
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:22px;
-      padding:18px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.35);
-      backdrop-filter: blur(10px);
+    /* Arcade cabinet shell */
+    .cabinet{
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    /* Arena */
-    .arena{
-      display:grid;
-      grid-template-columns: 1fr auto 1fr;
+    /* Marquee */
+    .marquee{
+      padding: 16px 18px;
+      background: linear-gradient(180deg, rgba(255,204,77,.18), rgba(255,204,77,.06));
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      display:flex;
       align-items:center;
-      gap:14px;
-      margin-top:10px;
+      justify-content:space-between;
+      gap:12px;
     }
-    .vs{
-      font-weight:900;
-      color:rgba(232,238,252,.55);
-      letter-spacing:2px;
-      padding:8px 12px;
+    .brand{
+      font-weight: 900;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: #fff2cc;
+      text-shadow: var(--glow);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .brand .tag{
+      font-size:12px;
+      padding:6px 10px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.14);
+      color: rgba(255,255,255,.85);
+    }
+    .desc{
+      text-align:right;
+      font-size:12px;
+      color: rgba(255,255,255,.85);
+      line-height:1.35;
     }
 
-    .slot{
-      display:flex; flex-direction:column; align-items:center; gap:10px;
-      padding:14px;
-      border-radius:18px;
-      background: rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.10);
+    /* Main screen */
+    .screen{
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(20,26,42,.85), rgba(15,20,34,.92));
     }
-    .slotHead{
-      display:flex; gap:10px; align-items:center;
-      color:rgba(232,238,252,.85);
-      font-size:14px; font-weight:800;
-    }
-    .dot{ width:10px; height:10px; border-radius:999px; }
-    .dot.blue{ background: var(--blue); box-shadow: 0 0 20px rgba(59,130,246,.6); }
-    .dot.red{ background: var(--red); box-shadow: 0 0 20px rgba(239,68,68,.55); }
 
-    .handFrame{
-      width:190px; height:190px;
-      border-radius:22px;
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
-      border:1px solid rgba(255,255,255,.12);
-      display:flex; align-items:center; justify-content:center;
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .card{
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .cardTitle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      margin-bottom:10px;
+    }
+    .small{
+      font-size:12px;
+      color: var(--muted);
+      line-height:1.4;
+    }
+
+    /* Score panel */
+    .scoreRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:8px;
+    }
+    .scoreBox{
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .scoreLabel{ font-size:12px; color: rgba(255,255,255,.75); }
+    .scoreVal{ margin-top:6px; font-size:28px; font-weight:1000; letter-spacing:.5px; }
+    .scoreVal.accent{ color: var(--accent); text-shadow: var(--glow); }
+
+    /* Center display */
+    .display{
+      position:relative;
+      border-radius: 22px;
+      background:
+        radial-gradient(220px 220px at 50% 45%, rgba(0,0,0,.55), rgba(0,0,0,.85)),
+        linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      justify-content:space-between;
+    }
+    .scanlines::before{
+      content:"";
+      position:absolute; inset:0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.05),
+        rgba(255,255,255,.05) 1px,
+        transparent 2px,
+        transparent 6px
+      );
+      opacity:.12;
+      pointer-events:none;
+    }
+    .ring{
+      width: 260px;
+      height: 260px;
+      border-radius:999px;
+      margin: 0 auto;
+      position:relative;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,.35), rgba(0,0,0,.85)),
+        conic-gradient(from 0deg, rgba(74,163,255,.9), rgba(255,91,91,.85), rgba(61,255,181,.85), rgba(255,204,77,.9), rgba(74,163,255,.9));
+      padding: 10px;
+      box-shadow: 0 0 30px rgba(74,163,255,.12), 0 0 30px rgba(255,204,77,.08);
+    }
+    .ringInner{
+      width:100%;
+      height:100%;
+      border-radius:999px;
+      background: radial-gradient(circle at 50% 50%, #05070d, #0b1020);
+      border: 1px solid rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
       position:relative;
       overflow:hidden;
     }
-    .handFrame::after{
-      content:"";
-      position:absolute; inset:-40%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), transparent 40%);
-      transform: rotate(12deg);
-      pointer-events:none;
+    .ledText{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-weight: 1000;
+      font-size: 26px;
+      letter-spacing: 2px;
+      color: #ff4d4d;
+      text-shadow: 0 0 14px rgba(255,77,77,.55);
+      text-align:center;
+      padding: 0 14px;
+      line-height:1.1;
+    }
+    .subLed{
+      margin-top:10px;
+      font-size:12px;
+      color: rgba(233,238,255,.75);
+      text-align:center;
+      line-height:1.4;
     }
 
+    /* Hands panel */
+    .hands{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top:6px;
+    }
+    .handBox{
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding: 12px;
+      text-align:center;
+    }
+    .who{
+      font-size:12px;
+      color: rgba(255,255,255,.8);
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .dot{ width:10px; height:10px; border-radius:999px; }
+    .dot.blue{ background: var(--blue); box-shadow: 0 0 16px rgba(74,163,255,.55); }
+    .dot.red{ background: var(--red); box-shadow: 0 0 16px rgba(255,91,91,.55); }
+
+    .handFrame{
+      width: 160px;
+      height: 140px;
+      margin: 0 auto;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
     .handImg{
-      width:150px; height:150px; object-fit:contain;
-      filter: drop-shadow(0 18px 24px rgba(0,0,0,.35));
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      filter: drop-shadow(0 16px 22px rgba(0,0,0,.35));
       transform-origin: 50% 70%;
     }
-
-    /* Rolling realism */
-    .rolling .handImg{
-      animation: shake .12s infinite linear;
-      filter: drop-shadow(0 18px 24px rgba(0,0,0,.35)) blur(.25px);
+    .rolling{
+      animation: floaty .18s infinite linear;
+      filter: blur(.25px) drop-shadow(0 16px 22px rgba(0,0,0,.35));
     }
-    @keyframes shake{
-      0%{ transform: translateX(-2px) rotate(-6deg) scale(1.01); }
-      50%{ transform: translateX(2px) rotate(6deg) scale(1.02); }
-      100%{ transform: translateX(-2px) rotate(-6deg) scale(1.01); }
+    @keyframes floaty{
+      0%{ transform: translateY(0px) rotate(-2deg); }
+      50%{ transform: translateY(-1px) rotate(2deg); }
+      100%{ transform: translateY(0px) rotate(-2deg); }
     }
-    .snap{
-      animation: snap .18s ease-out;
-    }
+    .snap{ animation: snap .18s ease-out; }
     @keyframes snap{
-      0%{ transform: scale(.92); }
-      60%{ transform: scale(1.03); }
+      0%{ transform: scale(.94); }
+      60%{ transform: scale(1.02); }
       100%{ transform: scale(1); }
     }
 
-    /* Choose area */
-    .chooseText{
-      text-align:center;
-      margin:14px 0 10px;
-      color:rgba(232,238,252,.75);
-      font-weight:800;
+    /* Control deck */
+    .deck{
+      padding: 16px 18px;
+      background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.45));
+      border-top: 1px solid rgba(255,255,255,.10);
     }
+
     .pickRow{
       display:flex;
       justify-content:center;
       gap:14px;
       flex-wrap:wrap;
-      margin-top:6px;
+      margin-bottom: 10px;
     }
-    .pick{
-      width:92px; height:92px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.14);
+    .pickBtn{
+      width: 92px; height: 92px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
       background: rgba(255,255,255,.06);
       cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      transition: transform .12s ease, background .12s ease;
+      box-shadow: 0 10px 26px rgba(0,0,0,.25);
+      color: rgba(255,255,255,.9);
+      font-weight: 900;
+      letter-spacing:.2px;
     }
-    .pick:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); }
-    .pick:active{ transform: translateY(0px) scale(.98); }
-    .pick:disabled{ opacity:.5; cursor:not-allowed; }
-    .pick img{ width:60px; height:60px; object-fit:contain; filter: drop-shadow(0 10px 16px rgba(0,0,0,.28)); }
+    .pickBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); }
+    .pickBtn:active{ transform: translateY(0px) scale(.985); }
+    .pickBtn:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
+    .pickBtn img{ width: 48px; height: 48px; object-fit:contain; }
 
-    /* Controls */
     .controls{
       display:flex;
       justify-content:center;
       gap:10px;
-      margin-top:12px;
       flex-wrap:wrap;
+      margin-top:6px;
     }
     .btn{
       border:0;
-      border-radius:999px;
-      padding:12px 16px;
-      font-size:15px;
-      font-weight:900;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 1000;
       cursor:pointer;
-      box-shadow: 0 14px 30px rgba(0,0,0,.30);
+      box-shadow: 0 14px 30px rgba(0,0,0,.35);
       transition: transform .12s ease, opacity .12s ease;
     }
-    .btn:active{ transform: scale(.98); }
+    .btn:active{ transform: scale(.985); }
     .btn:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
-    .btnStop{ background: linear-gradient(180deg, #60a5fa, #1d4ed8); color:white; }
-    .btnRetry{ background: rgba(255,255,255,.10); color: var(--text); border:1px solid rgba(255,255,255,.14); }
+    .btnStop{ background: linear-gradient(180deg, #72b6ff, #2b6bff); color:#fff; }
+    .btnReset{ background: rgba(255,255,255,.10); color: rgba(255,255,255,.92); border: 1px solid rgba(255,255,255,.14); }
 
-    /* Result */
     .result{
-      margin-top:14px;
+      margin-top: 10px;
       text-align:center;
-      font-size:18px;
-      font-weight:1000;
-      letter-spacing:.1px;
+      font-weight: 1000;
+      letter-spacing:.2px;
+      font-size: 16px;
     }
-    .result.win{ color: var(--win); text-shadow: 0 0 18px rgba(34,197,94,.35); }
-    .result.draw{ color: var(--draw); text-shadow: 0 0 18px rgba(96,165,250,.35); }
-    .result.lose{ color: var(--lose); }
-
-    /* Flash effect on stop */
-    .flash{
-      position:fixed; inset:0;
-      background: rgba(255,255,255,.12);
-      opacity:0;
-      pointer-events:none;
-    }
-    .flash.on{ animation: flash .16s ease-out; }
-    @keyframes flash{
-      0%{ opacity:.0; }
-      30%{ opacity:.28; }
-      100%{ opacity:0; }
-    }
+    .result.win{ color: var(--green); text-shadow: 0 0 16px rgba(61,255,181,.25); }
+    .result.draw{ color: var(--blue); text-shadow: 0 0 16px rgba(74,163,255,.25); }
+    .result.lose{ color: rgba(233,238,255,.70); }
 
     /* QR */
-    .qrWrap{ margin-top:14px; display:none; }
+    .qrWrap{ display:none; margin-top: 12px; }
     .qrCard{
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 14px;
+      border-radius: 18px;
       background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
-      padding:14px;
+      border: 1px solid rgba(255,255,255,.12);
       text-align:center;
     }
-    .couponLine{ margin-top:10px; font-size:14px; color:rgba(232,238,252,.9); word-break:break-all; }
-    .small{ margin-top:8px; font-size:12px; color:rgba(232,238,252,.65); line-height:1.5; }
+    .couponLine{ margin-top:10px; font-size: 13px; color: rgba(255,255,255,.92); word-break: break-all; }
+    .rule{ margin-top:8px; font-size: 12px; color: rgba(255,255,255,.70); line-height:1.4; }
+    .tip{ margin-top:10px; font-size: 12px; color: rgba(233,238,255,.55); text-align:center; line-height:1.5; }
 
-    .hint{ margin-top:12px; font-size:12px; color:rgba(232,238,252,.55); line-height:1.5; text-align:center; }
+    .footer{
+      padding: 12px 18px;
+      text-align:center;
+      color: rgba(233,238,255,.55);
+      font-size: 12px;
+      background: rgba(0,0,0,.18);
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    @media (max-width: 880px){
+      .grid{ grid-template-columns: 1fr; }
+      .ring{ width: 240px; height: 240px; }
+    }
   </style>
 </head>
+
 <body>
-  <div class="flash" id="flash"></div>
-
   <div class="wrap">
-    <div class="title">
-      <div>
-        <h1>가위바위보 한 판 🎮</h1>
-        <div class="sub">Guest가 선택하면 컴퓨터가 <b>롤링</b>을 시작합니다. 원하는 순간 <b>멈추기</b>로 확정하고 쿠폰 QR을 받으세요.</div>
-      </div>
-      <div class="pill">Realistic Mode</div>
-    </div>
-
-    <div class="board">
-      <div class="arena">
-        <div class="slot" id="cpuSlot">
-          <div class="slotHead"><span class="dot blue"></span>컴퓨터</div>
-          <div class="handFrame">
-            <img id="cpuImg" class="handImg" src="assets/paper.png" alt="컴퓨터" />
-          </div>
+    <div class="cabinet">
+      <div class="marquee">
+        <div class="brand">
+          <span>ARCADE EVENT</span>
+          <span class="tag">연승 달성 시 쿠폰</span>
         </div>
-
-        <div class="vs">VS</div>
-
-        <div class="slot" id="meSlot">
-          <div class="slotHead"><span class="dot red"></span>Guest</div>
-          <div class="handFrame">
-            <img id="meImg" class="handImg" src="assets/scissors.png" alt="Guest" />
-          </div>
+        <div class="desc">
+          가위·바위·보로 <b>연승</b>을 달성하세요.<br/>
+          목표 달성 시 <b>쿠폰 QR</b>이 잠금 해제됩니다.
         </div>
       </div>
 
-      <div class="chooseText" id="chooseText">가위바위보를 선택해 주세요</div>
+      <div class="screen">
+        <div class="grid">
+          <!-- Left: scores -->
+          <div class="card">
+            <div class="cardTitle">
+              <span>기록</span>
+              <span class="small">브라우저에 저장</span>
+            </div>
 
-      <div class="pickRow">
-        <button class="pick" id="pickScissors" onclick="choose('scissors')" aria-label="가위">
-          <img src="assets/scissors.png" alt="가위" />
-        </button>
-        <button class="pick" id="pickRock" onclick="choose('rock')" aria-label="바위">
-          <img src="assets/rock.png" alt="바위" />
-        </button>
-        <button class="pick" id="pickPaper" onclick="choose('paper')" aria-label="보">
-          <img src="assets/paper.png" alt="보" />
-        </button>
-      </div>
+            <div class="scoreRow">
+              <div class="scoreBox">
+                <div class="scoreLabel">현재 연승</div>
+                <div class="scoreVal accent" id="streakNow">0</div>
+              </div>
+              <div class="scoreBox">
+                <div class="scoreLabel">오늘 최고 연승</div>
+                <div class="scoreVal" id="streakMax">0</div>
+              </div>
+            </div>
 
-      <div class="controls">
-        <button class="btn btnStop" id="stopBtn" onclick="stopRolling()" disabled>멈추기</button>
-        <button class="btn btnRetry" id="retryBtn" onclick="resetGame()" disabled>다시하기</button>
-      </div>
+            <div class="small" style="margin-top:12px">
+              쿠폰 목표(설정):<br/>
+              • 3연승: 30% 할인<br/>
+              • 5연승: 50% 할인<br/>
+              • 10연승: 100% 할인
+            </div>
 
-      <div class="result" id="result">대기 중입니다.</div>
-
-      <div class="qrWrap" id="qrWrap">
-        <div class="qrCard">
-          <div style="display:flex; justify-content:center;">
-            <div id="qrcode"></div>
+            <div class="small" style="margin-top:10px">
+              * 패배 시 연승 0으로 초기화<br/>
+              * 무승부 처리 방식은 상단 설정에서 변경 가능
+            </div>
           </div>
-          <div class="couponLine"><b>쿠폰 내용:</b> <span id="couponText">-</span></div>
-          <div class="small" id="couponRule">* QR을 계산대에서 제시해 주세요. (1회 사용 / 당일 유효)</div>
+
+          <!-- Center: LED display -->
+          <div class="display scanlines card">
+            <div class="ring">
+              <div class="ringInner">
+                <div>
+                  <div class="ledText" id="ledMain">READY</div>
+                  <div class="subLed" id="ledSub">아래에서 선택 후, 멈추기를 눌러 확정</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hands">
+              <div class="handBox">
+                <div class="who"><span class="dot blue"></span>컴퓨터</div>
+                <div class="handFrame">
+                  <img id="cpuImg" class="handImg" alt="컴퓨터" />
+                </div>
+                <div class="small" id="cpuLabel">-</div>
+              </div>
+
+              <div class="handBox">
+                <div class="who"><span class="dot red"></span>GUEST</div>
+                <div class="handFrame">
+                  <img id="meImg" class="handImg" alt="게스트" />
+                </div>
+                <div class="small" id="meLabel">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: coupon status -->
+          <div class="card">
+            <div class="cardTitle">
+              <span>쿠폰 잠금 상태</span>
+              <span class="small">달성 시 1회 발급</span>
+            </div>
+            <div class="small">
+              현재 연승에 따라 자동으로 판단됩니다.<br/>
+              목표 달성 시 “UNLOCK” 표시와 함께 QR이 생성됩니다.
+            </div>
+
+            <div style="margin-top:12px; padding:12px; border-radius:16px; background:rgba(0,0,0,.22); border:1px solid rgba(255,255,255,.10);">
+              <div class="small">현재 상태</div>
+              <div style="margin-top:8px; font-weight:1000; font-size:18px;" id="couponStatus">LOCKED</div>
+              <div class="small" style="margin-top:6px;" id="couponHint">연승 목표 달성 시 해제됩니다.</div>
+            </div>
+
+            <div class="small" style="margin-top:12px;">
+              운영 팁:<br/>
+              • “캡처 허용/불가” 정책은 현장 룰로 고정하세요.<br/>
+              • QR 텍스트에 날짜/난수를 넣어 중복 사용을 줄이세요.
+            </div>
+          </div>
+        </div>
+
+        <div class="qrWrap" id="qrWrap">
+          <div class="qrCard">
+            <div style="display:flex; justify-content:center;">
+              <div id="qrcode"></div>
+            </div>
+            <div class="couponLine"><b>쿠폰 QR 내용:</b> <span id="couponText">-</span></div>
+            <div class="rule" id="couponRule">* 계산대에서 제시해 주세요. (1회 사용 / 당일 유효)</div>
+          </div>
+        </div>
+
+        <div class="tip" id="tipLine">
+          ※ 데모 버전입니다. 할인율/연승 목표/무승부 처리 등은 상단 설정값만 바꾸면 됩니다.
         </div>
       </div>
 
-      <div class="hint">
-        운영 팁: “꽝 없음(최소 혜택 보장)”이 방문 전환율이 좋습니다. / QR에는 쿠폰코드·날짜·난수가 포함됩니다.
+      <div class="deck">
+        <div class="pickRow">
+          <button class="pickBtn" id="btnScissors" onclick="choose('가위')">
+            <img id="pickScissors" alt="가위" />
+            <span>가위</span>
+          </button>
+          <button class="pickBtn" id="btnRock" onclick="choose('바위')">
+            <img id="pickRock" alt="바위" />
+            <span>바위</span>
+          </button>
+          <button class="pickBtn" id="btnPaper" onclick="choose('보')">
+            <img id="pickPaper" alt="보" />
+            <span>보</span>
+          </button>
+        </div>
+
+        <div class="controls">
+          <button class="btn btnStop" id="stopBtn" onclick="stopRolling()" disabled>멈추기</button>
+          <button class="btn btnReset" id="resetBtn" onclick="resetGame()">다시하기</button>
+        </div>
+
+        <div class="result" id="result">대기 중입니다.</div>
       </div>
+
+      <div class="footer">© Arcade Mini Game</div>
     </div>
   </div>
 
+  <!-- QRCode.js -->
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
   <script>
-    // ---- Audio (무음 허용, 자동재생 제한 대응) ----
-    const audioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
+    /***********************************************************
+     *  ✅ 설정(여기만 바꾸면 나중에 쉽게 수정됩니다)
+     ***********************************************************/
+    const CONFIG = {
+      // 이미지 경로: 현재 repo 기준 (assets 폴더 사용)
+      images: {
+        '가위': 'assets/scissors.png',
+        '바위': 'assets/rock.png',
+        '보'  : 'assets/paper.png'
+      },
 
-    function beep(freq=440, dur=0.05, type='square', gain=0.03){
-      if(!audioCtx) return;
-      try{
-        const o = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        o.type = type;
-        o.frequency.value = freq;
-        g.gain.value = gain;
-        o.connect(g);
-        g.connect(audioCtx.destination);
-        o.start();
-        o.stop(audioCtx.currentTime + dur);
-      }catch(e){}
-    }
+      // 무승부 처리: '유지' 또는 '초기화'
+      drawRule: '유지',
 
-    function haptic(ms=20){
-      if(navigator.vibrate) navigator.vibrate(ms);
-    }
+      // 연승 목표별 쿠폰(원하시면 여기 숫자/문구만 수정)
+      streakRewards: [
+        { streak: 3,  title: '30% 할인',  code: 'DISC30' },
+        { streak: 5,  title: '50% 할인',  code: 'DISC50' },
+        { streak: 10, title: '100% 할인', code: 'DISC100' }
+      ],
 
-    const choices = ['scissors','rock','paper'];
-    const imgOf = (v) => v === 'scissors' ? 'assets/scissors.png' : (v === 'rock' ? 'assets/rock.png' : 'assets/paper.png');
-    const labelOf = (v) => v === 'scissors' ? '가위' : (v === 'rock' ? '바위' : '보');
+      // QR payload prefix(현장 통제용)
+      qrPrefix: 'INSPIRE',
 
-    // 쿠폰 정책
-    const couponByOutcome = {
-      WIN:  { name: '음료 1잔 교환권',     code: 'DRINK1' },
-      DRAW: { name: '사이드 1종 50% 할인', code: 'SIDE50' },
-      LOSE: { name: '5% 할인 쿠폰',        code: 'DISC5' }
+      // 1일 1회로 막고 싶으면 true로 변경
+      dailyOneCouponPerTier: false
     };
 
-    function buildQrPayload(couponCode){
+    /***********************************************************
+     *  상태값
+     ***********************************************************/
+    const choices = ['가위','바위','보'];
+    let selectedMe = null;
+    let rollingTimer = null;
+    let rollingValue = '보';
+    let streakNow = 0;
+    let streakMax = 0;
+
+    // 티어별 "발급 완료" 기록(연승 유지 상태에서 반복 발급 방지)
+    // key 예: "20260107:DISC30"
+    const issuedKeyPrefix = 'issued:';
+
+    /***********************************************************
+     *  엘리먼트
+     ***********************************************************/
+    const el = {
+      ledMain: document.getElementById('ledMain'),
+      ledSub: document.getElementById('ledSub'),
+      cpuImg: document.getElementById('cpuImg'),
+      meImg: document.getElementById('meImg'),
+      cpuLabel: document.getElementById('cpuLabel'),
+      meLabel: document.getElementById('meLabel'),
+      stopBtn: document.getElementById('stopBtn'),
+      result: document.getElementById('result'),
+      streakNow: document.getElementById('streakNow'),
+      streakMax: document.getElementById('streakMax'),
+      couponStatus: document.getElementById('couponStatus'),
+      couponHint: document.getElementById('couponHint'),
+      qrWrap: document.getElementById('qrWrap'),
+      qrcode: document.getElementById('qrcode'),
+      couponText: document.getElementById('couponText'),
+      couponRule: document.getElementById('couponRule'),
+      pickScissors: document.getElementById('pickScissors'),
+      pickRock: document.getElementById('pickRock'),
+      pickPaper: document.getElementById('pickPaper'),
+      btnScissors: document.getElementById('btnScissors'),
+      btnRock: document.getElementById('btnRock'),
+      btnPaper: document.getElementById('btnPaper'),
+    };
+
+    /***********************************************************
+     *  초기 로드
+     ***********************************************************/
+    function todayKey(){
       const d = new Date();
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth()+1).padStart(2,'0');
       const dd = String(d.getDate()).padStart(2,'0');
-      const dateStr = `${yyyy}-${mm}-${dd}`;
-      const rand = Math.random().toString(16).slice(2, 8).toUpperCase();
-      return `INSPIRE|${couponCode}|${dateStr}|${rand}`;
+      return `${yyyy}${mm}${dd}`;
     }
 
-    function judge(me, cpu){
-      if(me === cpu) return 'DRAW';
-      if(
-        (me==='scissors' && cpu==='paper') ||
-        (me==='rock' && cpu==='scissors') ||
-        (me==='paper' && cpu==='rock')
-      ) return 'WIN';
-      return 'LOSE';
+    function loadScores(){
+      const t = todayKey();
+      const savedDay = localStorage.getItem('dayKey');
+      if(savedDay !== t){
+        // 날짜 바뀌면 '오늘 최고 연승' 초기화(원치 않으면 이 줄 삭제)
+        localStorage.setItem('dayKey', t);
+        localStorage.setItem('streakMax', '0');
+      }
+      streakMax = parseInt(localStorage.getItem('streakMax') || '0', 10);
+      streakNow = parseInt(localStorage.getItem('streakNow') || '0', 10);
+      renderScores();
     }
 
-    const el = {
-      cpuSlot: document.getElementById('cpuSlot'),
-      meSlot: document.getElementById('meSlot'),
-      cpuImg: document.getElementById('cpuImg'),
-      meImg: document.getElementById('meImg'),
-      chooseText: document.getElementById('chooseText'),
-      stopBtn: document.getElementById('stopBtn'),
-      retryBtn: document.getElementById('retryBtn'),
-      result: document.getElementById('result'),
-      qrWrap: document.getElementById('qrWrap'),
-      qrcode: document.getElementById('qrcode'),
-      couponText: document.getElementById('couponText'),
-      flash: document.getElementById('flash')
-    };
+    function saveScores(){
+      localStorage.setItem('streakNow', String(streakNow));
+      localStorage.setItem('streakMax', String(streakMax));
+    }
+
+    function renderScores(){
+      el.streakNow.textContent = streakNow;
+      el.streakMax.textContent = streakMax;
+    }
+
+    function setPickImages(){
+      el.pickScissors.src = CONFIG.images['가위'];
+      el.pickRock.src = CONFIG.images['바위'];
+      el.pickPaper.src = CONFIG.images['보'];
+    }
+
+    function setInitialHands(){
+      el.cpuImg.src = CONFIG.images['보'];
+      el.meImg.src = CONFIG.images['가위'];
+      el.cpuLabel.textContent = '-';
+      el.meLabel.textContent = '-';
+    }
 
     function setPickDisabled(disabled){
-      document.querySelectorAll('.pick').forEach(b => b.disabled = disabled);
+      [el.btnScissors, el.btnRock, el.btnPaper].forEach(b => b.disabled = disabled);
     }
 
-    // State
-    let selectedMe = null;
-    let rollingTimer = null;
-    let rollingValue = 'paper';
+    loadScores();
+    setPickImages();
+    setInitialHands();
+    updateCouponPanel();
 
-    function clearQR(){
-      el.qrWrap.style.display = 'none';
-      el.qrcode.innerHTML = '';
-      el.couponText.textContent = '-';
-    }
-
+    /***********************************************************
+     *  게임 흐름
+     ***********************************************************/
     function choose(me){
       if(rollingTimer) return;
+
       selectedMe = me;
+      el.meImg.src = CONFIG.images[me];
+      animateSnap(el.meImg);
 
-      // Guest hand snap
-      el.meImg.src = imgOf(me);
-      el.meImg.classList.remove('snap'); void el.meImg.offsetWidth; el.meImg.classList.add('snap');
-
-      el.chooseText.textContent = `당신의 선택은 ‘${labelOf(me)}’입니다. (이제 컴퓨터가 롤링합니다)`;
+      el.meLabel.textContent = `선택: ${me}`;
+      el.ledMain.textContent = 'ROLLING';
+      el.ledSub.textContent = '멈추기를 눌러 결과를 확정하세요';
       el.result.className = 'result';
-      el.result.textContent = '멈추기를 눌러 결과를 확정하세요.';
+      el.result.textContent = '컴퓨터 선택 중… (멈추기 버튼으로 확정)';
 
       clearQR();
-      el.retryBtn.disabled = false;
 
-      // Rolling starts immediately (핵심)
+      // 선택하면 즉시 롤링 시작
       startRolling();
     }
 
@@ -392,16 +666,12 @@
       setPickDisabled(true);
       el.stopBtn.disabled = false;
 
-      el.cpuSlot.classList.add('rolling');
-
-      let idx = 0;
+      let i = 0;
       rollingTimer = setInterval(() => {
-        rollingValue = choices[idx % 3];
-        el.cpuImg.src = imgOf(rollingValue);
-
-        // 롤링 사운드(가볍게)
-        if(idx % 2 === 0) beep(520, 0.03, 'square', 0.02);
-        idx++;
+        rollingValue = choices[i % 3];
+        el.cpuImg.src = CONFIG.images[rollingValue];
+        if(!el.cpuImg.classList.contains('rolling')) el.cpuImg.classList.add('rolling');
+        i++;
       }, 90);
     }
 
@@ -411,41 +681,156 @@
       clearInterval(rollingTimer);
       rollingTimer = null;
 
-      // Flash + haptic + snap
-      el.flash.classList.remove('on'); void el.flash.offsetWidth; el.flash.classList.add('on');
-      haptic(25);
-      beep(220, 0.06, 'sine', 0.05);
+      el.cpuImg.classList.remove('rolling');
+      animateSnap(el.cpuImg);
 
-      el.cpuSlot.classList.remove('rolling');
-
-      const cpu = rollingValue; // 멈춘 순간 값
-      el.cpuImg.src = imgOf(cpu);
-      el.cpuImg.classList.remove('snap'); void el.cpuImg.offsetWidth; el.cpuImg.classList.add('snap');
+      const cpu = rollingValue;
+      el.cpuLabel.textContent = `선택: ${cpu}`;
 
       const outcome = judge(selectedMe, cpu);
-      const cpn = couponByOutcome[outcome];
-
-      el.result.className = 'result ' + (outcome === 'WIN' ? 'win' : outcome === 'DRAW' ? 'draw' : 'lose');
-
-      const text =
-        outcome === 'WIN' ? '🎉 승리!' :
-        outcome === 'DRAW' ? '😄 무승부!' :
-        '😉 참여 감사합니다!';
-
-      el.result.textContent = `${text} (Guest: ${labelOf(selectedMe)} / 컴퓨터: ${labelOf(cpu)}) → ${cpn.name}`;
-
-      // QR 등장 연출
-      setTimeout(() => {
-        const payload = buildQrPayload(cpn.code);
-        el.couponText.textContent = payload;
-        el.qrWrap.style.display = 'block';
-        el.qrcode.innerHTML = '';
-        new QRCode(el.qrcode, { text: payload, width: 200, height: 200 });
-      }, 420);
+      applyOutcome(outcome, selectedMe, cpu);
 
       el.stopBtn.disabled = true;
-      el.retryBtn.disabled = false;
       setPickDisabled(false);
+    }
+
+    function judge(me, cpu){
+      if(me === cpu) return 'DRAW';
+      if(
+        (me==='가위' && cpu==='보') ||
+        (me==='바위' && cpu==='가위') ||
+        (me==='보' && cpu==='바위')
+      ) return 'WIN';
+      return 'LOSE';
+    }
+
+    function applyOutcome(outcome, me, cpu){
+      if(outcome === 'WIN'){
+        streakNow += 1;
+        if(streakNow > streakMax) streakMax = streakNow;
+
+        el.ledMain.textContent = 'WIN';
+        el.ledSub.textContent = `연승 +1 (현재 ${streakNow}연승)`;
+        el.result.className = 'result win';
+        el.result.textContent = `승리! (GUEST: ${me} / 컴퓨터: ${cpu})  →  현재 ${streakNow}연승`;
+
+      } else if(outcome === 'DRAW'){
+        if(CONFIG.drawRule === '초기화') streakNow = 0;
+
+        el.ledMain.textContent = 'DRAW';
+        el.ledSub.textContent = CONFIG.drawRule === '유지'
+          ? `무승부 (연승 유지: ${streakNow}연승)`
+          : `무승부 (연승 초기화)`;
+
+        el.result.className = 'result draw';
+        el.result.textContent = CONFIG.drawRule === '유지'
+          ? `무승부! (둘 다 ${me})  →  현재 ${streakNow}연승 유지`
+          : `무승부! (둘 다 ${me})  →  연승 초기화`;
+
+      } else {
+        streakNow = 0;
+
+        el.ledMain.textContent = 'LOSE';
+        el.ledSub.textContent = '연승이 초기화되었습니다';
+        el.result.className = 'result lose';
+        el.result.textContent = `패배… (GUEST: ${me} / 컴퓨터: ${cpu})  →  연승 0`;
+      }
+
+      saveScores();
+      renderScores();
+
+      // 쿠폰 발급 체크
+      const reward = getEligibleReward(streakNow);
+      if(reward){
+        tryIssueCoupon(reward);
+      } else {
+        updateCouponPanel();
+      }
+    }
+
+    function getEligibleReward(streak){
+      // 가장 높은 티어 우선(10 > 5 > 3)
+      const sorted = [...CONFIG.streakRewards].sort((a,b) => b.streak - a.streak);
+      return sorted.find(r => streak >= r.streak) || null;
+    }
+
+    function tryIssueCoupon(reward){
+      const tKey = todayKey();
+      const issuedKey = `${issuedKeyPrefix}${tKey}:${reward.code}`;
+
+      // 옵션: 티어별 일 1회 제한
+      if(CONFIG.dailyOneCouponPerTier){
+        if(localStorage.getItem(issuedKey) === '1'){
+          updateCouponPanel(true, reward, true);
+          return;
+        }
+      }
+
+      // 연승 유지 상태에서 같은 티어 계속 재발급 방지(기본)
+      // 이미 발급된 경우엔 상태만 표시
+      if(localStorage.getItem(issuedKey) === '1'){
+        updateCouponPanel(true, reward, true);
+        return;
+      }
+
+      // 발급 처리
+      localStorage.setItem(issuedKey, '1');
+
+      const payload = buildQrPayload(reward.code, reward.streak);
+      showQR(payload);
+
+      el.couponStatus.textContent = 'UNLOCKED';
+      el.couponStatus.style.color = 'var(--accent)';
+      el.couponStatus.style.textShadow = 'var(--glow)';
+      el.couponHint.textContent = `달성: ${reward.streak}연승 (${reward.title}) — QR이 생성되었습니다.`;
+
+      el.ledMain.textContent = 'UNLOCK';
+      el.ledSub.textContent = `${reward.streak}연승 달성! ${reward.title} 쿠폰 지급`;
+      el.result.className = 'result win';
+      el.result.textContent = `축하드립니다! ${reward.streak}연승 달성 → ${reward.title} 쿠폰 QR이 발급되었습니다.`;
+    }
+
+    function updateCouponPanel(eligible=false, reward=null, already=false){
+      if(!eligible){
+        el.couponStatus.textContent = 'LOCKED';
+        el.couponStatus.style.color = 'rgba(233,238,255,.92)';
+        el.couponStatus.style.textShadow = 'none';
+        el.couponHint.textContent = '연승 목표 달성 시 해제됩니다.';
+        return;
+      }
+      el.couponStatus.textContent = already ? 'UNLOCKED(발급완료)' : 'UNLOCKED';
+      el.couponStatus.style.color = 'var(--accent)';
+      el.couponStatus.style.textShadow = 'var(--glow)';
+      el.couponHint.textContent = already
+        ? `이미 오늘 ${reward.streak}연승(${reward.title}) 쿠폰을 발급했습니다.`
+        : `달성: ${reward.streak}연승 (${reward.title})`;
+    }
+
+    function buildQrPayload(couponCode, streakTarget){
+      const t = todayKey();
+      const rand = Math.random().toString(16).slice(2, 8).toUpperCase();
+      // 예: INSPIRE|DISC50|20260107|A1B2C3|STREAK5|NOW7
+      return `${CONFIG.qrPrefix}|${couponCode}|${t}|${rand}|STREAK${streakTarget}|NOW${streakNow}`;
+    }
+
+    function showQR(payload){
+      el.couponText.textContent = payload;
+      el.qrWrap.style.display = 'block';
+      el.qrcode.innerHTML = '';
+      new QRCode(el.qrcode, { text: payload, width: 210, height: 210 });
+      el.couponRule.textContent = '* 계산대에서 제시해 주세요. (1회 사용 / 당일 유효)';
+    }
+
+    function clearQR(){
+      el.qrWrap.style.display = 'none';
+      el.qrcode.innerHTML = '';
+      el.couponText.textContent = '-';
+    }
+
+    function animateSnap(img){
+      img.classList.remove('snap');
+      void img.offsetWidth;
+      img.classList.add('snap');
     }
 
     function resetGame(){
@@ -454,22 +839,21 @@
         rollingTimer = null;
       }
       selectedMe = null;
-      rollingValue = 'paper';
+      rollingValue = '보';
 
-      el.cpuSlot.classList.remove('rolling');
-
-      el.cpuImg.src = imgOf('paper');
-      el.meImg.src = imgOf('scissors');
-
-      el.chooseText.textContent = '가위바위보를 선택해 주세요';
+      el.ledMain.textContent = 'READY';
+      el.ledSub.textContent = '아래에서 선택 후, 멈추기를 눌러 확정';
       el.result.className = 'result';
       el.result.textContent = '대기 중입니다.';
 
+      el.cpuImg.classList.remove('rolling');
+      setInitialHands();
       clearQR();
 
       el.stopBtn.disabled = true;
-      el.retryBtn.disabled = true;
       setPickDisabled(false);
+
+      updateCouponPanel();
     }
   </script>
 </body>
