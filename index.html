@@ -6,104 +6,230 @@
   <title>가위바위보 쿠폰 이벤트</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background:#f6f7f9; }
-    .wrap { max-width: 720px; margin: 0 auto; padding: 20px; }
-    .card { background:#fff; border-radius:16px; padding:18px; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 20px; }
+    .card { background:#fff; border-radius:18px; padding:20px; box-shadow: 0 10px 24px rgba(0,0,0,.07); }
     h1 { font-size: 22px; margin: 0 0 8px; }
-    .sub { color:#555; margin: 0 0 14px; font-size: 14px; line-height: 1.4; }
-    .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px; }
-    button {
-      flex: 1 1 30%;
-      padding: 14px 10px; border: 0; border-radius: 14px;
-      font-size: 18px; cursor: pointer; background:#111; color:#fff;
+    .sub { color:#555; margin: 0 0 14px; font-size: 14px; line-height: 1.5; }
+    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:#eef; color:#224; font-size:12px; }
+
+    /* Arena */
+    .arena{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:24px;
+      margin-top:18px;
+      padding-top:6px;
     }
-    button:active { transform: scale(.99); }
-    .row { display:flex; gap:12px; margin-top: 14px; flex-wrap:wrap; }
-    .box { flex:1 1 220px; padding:14px; border-radius:14px; background:#f2f4f7; }
-    .label { font-size: 12px; color:#666; margin-bottom: 6px; }
-    .value { font-size: 20px; font-weight: 700; }
-    .result { margin-top: 14px; font-size: 18px; font-weight: 800; }
-    .hint { margin-top: 10px; font-size: 13px; color:#666; line-height:1.4; }
+    .player{ text-align:center; flex:1; }
+    .handCircle{
+      width:140px; height:140px;
+      border-radius:999px;
+      margin:0 auto;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 16px 28px rgba(0,0,0,.10);
+    }
+    .handCircle svg{ width:92px; height:92px; }
+    .handCircle.computer{ background:#3b82f6; }
+    .handCircle.guest{ background:#ef4444; }
+    .playerLabel{ margin-top:10px; font-size:14px; color:#555; font-weight:800; }
+
+    .chooseText{
+      text-align:center;
+      margin-top:16px;
+      color:#666;
+      font-weight:800;
+    }
+
+    /* Picks */
+    .pickRow{
+      display:flex;
+      justify-content:center;
+      gap:18px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    .pick{
+      width:78px; height:78px;
+      border-radius:999px;
+      border:0;
+      background:#f2f4f7;
+      box-shadow: 0 10px 20px rgba(0,0,0,.07);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .pick svg{ width:48px; height:48px; }
+    .pick:active{ transform: scale(.98); }
+    .pick:disabled{ opacity:.55; cursor:not-allowed; }
+
+    /* Control buttons */
+    .controls{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    .ctrlBtn{
+      border:0;
+      border-radius:999px;
+      padding:12px 16px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,.07);
+    }
+    .ctrlBtn:disabled{ opacity:.5; cursor:not-allowed; }
+    .startBtn{ background:#111; color:#fff; }
+    .stopBtn{ background:#1a73e8; color:#fff; }
+    .retryBtn{ background:#6b7280; color:#fff; }
+
+    /* Result */
+    .result { margin-top: 16px; font-size: 18px; font-weight: 900; text-align:center; }
+    .win { color:#1e8e3e; }
+    .draw { color:#1a73e8; }
+    .lose { color:#666; }
+
+    /* QR */
     .qrWrap { margin-top: 14px; display:none; }
     .qrCard { background:#fff; border-radius:16px; padding:16px; border:1px solid #e6e8ee; }
-    .couponLine { margin-top:10px; font-size:14px; color:#333; word-break: break-all; }
-    .small { font-size:12px; color:#777; margin-top:8px; line-height:1.4; }
-    .footer { margin-top: 14px; font-size: 12px; color:#888; }
-    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:#eef; color:#224; font-size:12px; }
-.win { color:#1e8e3e; font-weight:800; }
-.draw { color:#1a73e8; font-weight:800; }
-.lose { color:#666; font-weight:800; }
+    .couponLine { margin-top:10px; font-size:14px; color:#333; word-break: break-all; text-align:center; }
+    .small { font-size:12px; color:#777; margin-top:8px; line-height:1.4; text-align:center; }
 
+    .hint { margin-top: 12px; font-size: 13px; color:#666; line-height:1.5; }
+    .footer { margin-top: 14px; font-size: 12px; color:#888; text-align:center; }
   </style>
-  #countdown { font-size: 20px; margin-top: 8px; }
-
 </head>
+
 <body>
   <div class="wrap">
     <div class="card">
       <h1>가위바위보 한 판 🎮</h1>
       <p class="sub">
-        선택 후 결과에 따라 <b>쿠폰 QR</b>이 생성됩니다.<br/>
-        <span class="pill">무료 데모</span> 운영용으로 문구/쿠폰 정책은 자유롭게 변경하세요.
+        아래에서 가위/바위/보를 선택하면 <b>컴퓨터가 롤링</b>을 시작합니다.<br/>
+        원하는 타이밍에 <b>멈추기</b>를 눌러 결과를 확정하고, <b>쿠폰 QR</b>을 받으세요.
+        <br/><span class="pill">무료 운영</span>
       </p>
 
-      <div class="btns">
-        <button onclick="play('가위')">✌️ 가위</button>
-        <button onclick="play('바위')">✊ 바위</button>
-        <button onclick="play('보')">🖐️ 보</button>
+      <!-- Arena -->
+      <div class="arena">
+        <div class="player">
+          <div class="handCircle computer" id="cpuCircle">
+            <div id="cpuHand"></div>
+          </div>
+          <div class="playerLabel">컴퓨터</div>
+        </div>
+
+        <div class="player">
+          <div class="handCircle guest" id="meCircle">
+            <div id="meHand"></div>
+          </div>
+          <div class="playerLabel">Guest</div>
+        </div>
       </div>
 
-      <div class="row">
-        <div class="box">
-          <div class="label">내 선택</div>
-          <div class="value" id="me">-</div>
-        </div>
-        <div class="box">
-          <div class="label">컴퓨터</div>
-          <div class="value" id="cpu">-</div>
-        </div>
+      <div class="chooseText" id="chooseText">가위바위보를 선택해 주세요</div>
+
+      <!-- Picks -->
+      <div class="pickRow">
+        <button class="pick" id="pickScissors" onclick="choose('scissors')" aria-label="가위">
+          <span id="iconScissors"></span>
+        </button>
+        <button class="pick" id="pickRock" onclick="choose('rock')" aria-label="바위">
+          <span id="iconRock"></span>
+        </button>
+        <button class="pick" id="pickPaper" onclick="choose('paper')" aria-label="보">
+          <span id="iconPaper"></span>
+        </button>
       </div>
 
-      <div class="result" id="result">선택해 주세요.</div>
-      <div class="result" id="countdown"></div>
+      <!-- Controls -->
+      <div class="controls">
+        <button class="ctrlBtn startBtn" id="startBtn" onclick="startRolling()" disabled>롤링 시작</button>
+        <button class="ctrlBtn stopBtn" id="stopBtn" onclick="stopRolling()" disabled>멈추기</button>
+        <button class="ctrlBtn retryBtn" id="retryBtn" onclick="resetGame()" disabled>다시하기</button>
+      </div>
 
+      <div class="result" id="result">대기 중입니다.</div>
 
       <div class="qrWrap" id="qrWrap">
         <div class="qrCard">
-          <div class="label">쿠폰 QR</div>
-          <div id="qrcode"></div>
-          <div class="couponLine"><b>쿠폰 내용:</b> <span id="couponText">-</span></div>
-          <div class="small" id="couponRule">
-            * QR을 계산대에서 제시해 주세요. (1회 사용 / 당일 유효)
+          <div style="display:flex; justify-content:center;">
+            <div id="qrcode"></div>
           </div>
+          <div class="couponLine"><b>쿠폰 내용:</b> <span id="couponText">-</span></div>
+          <div class="small" id="couponRule">* QR을 계산대에서 제시해 주세요. (1회 사용 / 당일 유효)</div>
         </div>
       </div>
 
       <div class="hint">
         운영 팁(무료 운영 기준):<br/>
-        - “꽝 없음” 추천: 방문 전환이 훨씬 좋습니다.<br/>
-        - QR 내용에는 <b>쿠폰종류 + 날짜 + 난수</b>를 넣어두면 현장 통제가 쉬워집니다.
+        - “꽝 없음(최소 혜택 보장)”이 방문 전환에 유리합니다.<br/>
+        - QR 내용에는 <b>쿠폰종류 + 날짜 + 난수</b>가 포함되어 현장 통제가 쉬워집니다.
       </div>
 
-      <div class="footer">
-        © Event Mini Game
-      </div>
+      <div class="footer">© Event Mini Game</div>
     </div>
   </div>
 
-  <!-- QRCode.js (무료 CDN) -->
+  <!-- QRCode.js -->
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script>
-    const choices = ['가위','바위','보'];
 
-    // 승/무/패에 따른 쿠폰 정책(원하시면 여기만 바꾸면 됩니다)
+  <script>
+    // ====== 고급스러운 SVG 아이콘(파일 업로드 불필요) ======
+    function svgHand(type){
+      // 단순하지만 선명한 “일러스트 느낌” SVG (흰색 손 + 외곽선)
+      const common = 'fill="#ffffff" stroke="#111827" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"';
+      if(type === 'scissors'){
+        return `
+          <svg viewBox="0 0 256 256" aria-hidden="true">
+            <path ${common} d="M86 190c18 10 44 6 58-12l12-16 12 16c14 18 40 22 58 12 18-10 24-34 14-52-8-14-24-22-40-20-8 1-16 5-22 11l-22 24-22-24c-6-6-14-10-22-11-16-2-32 6-40 20-10 18-4 42 14 52z"/>
+            <path ${common} d="M110 78l34 70"/>
+            <path ${common} d="M146 78l-34 70"/>
+          </svg>`;
+      }
+      if(type === 'rock'){
+        return `
+          <svg viewBox="0 0 256 256" aria-hidden="true">
+            <path ${common} d="M78 128c0-24 16-44 40-44h46c22 0 36 18 36 40v22c0 28-20 50-50 50h-22c-28 0-50-20-50-50z"/>
+            <path ${common} d="M102 92v-6c0-14 10-24 24-24"/>
+            <path ${common} d="M140 92v-8c0-14 10-24 24-24"/>
+            <path ${common} d="M118 92v-10c0-14 10-24 24-24"/>
+          </svg>`;
+      }
+      // paper
+      return `
+        <svg viewBox="0 0 256 256" aria-hidden="true">
+          <path ${common} d="M92 74c0-14 10-24 24-24h24c14 0 24 10 24 24v108c0 14-10 24-24 24h-24c-14 0-24-10-24-24z"/>
+          <path ${common} d="M108 96h40M108 126h40M108 156h40"/>
+        </svg>`;
+    }
+
+    // 아이콘 삽입
+    document.getElementById('iconScissors').innerHTML = svgHand('scissors');
+    document.getElementById('iconRock').innerHTML = svgHand('rock');
+    document.getElementById('iconPaper').innerHTML = svgHand('paper');
+
+    // 초기 큰 손
+    document.getElementById('cpuHand').innerHTML = svgHand('paper');
+    document.getElementById('meHand').innerHTML = svgHand('scissors');
+
+    // ====== 게임 로직(Stop 버튼으로 멈추기) ======
+    const choices = ['scissors','rock','paper'];
+
+    function labelOf(v){
+      return v === 'scissors' ? '가위' : (v === 'rock' ? '바위' : '보');
+    }
+
+    // 쿠폰 정책(원하시면 여기만 바꾸면 됩니다)
     const couponByOutcome = {
-      WIN:  { name: '음료 1잔 교환권',  code: 'DRINK1' },
+      WIN:  { name: '음료 1잔 교환권',     code: 'DRINK1' },
       DRAW: { name: '사이드 1종 50% 할인', code: 'SIDE50' },
-      LOSE: { name: '5% 할인 쿠폰',      code: 'DISC5' }
+      LOSE: { name: '5% 할인 쿠폰',        code: 'DISC5' }
     };
 
-    // QR에 담길 데이터(현장 통제용)
-    // 예: INSPIRE|DRINK1|2026-01-07|A1B2C3
     function buildQrPayload(couponCode){
       const d = new Date();
       const yyyy = d.getFullYear();
@@ -117,72 +243,139 @@
     function judge(me, cpu){
       if(me === cpu) return 'DRAW';
       if(
-        (me==='가위' && cpu==='보') ||
-        (me==='바위' && cpu==='가위') ||
-        (me==='보' && cpu==='바위')
+        (me==='scissors' && cpu==='paper') ||
+        (me==='rock' && cpu==='scissors') ||
+        (me==='paper' && cpu==='rock')
       ) return 'WIN';
       return 'LOSE';
     }
 
-    let qr; // QRCode instance
+    // 상태
+    let selectedMe = null;
+    let rollingTimer = null;
+    let rollingValue = 'paper'; // 롤링 중 현재 값
 
-    function play(me){
-  const cpu = choices[Math.floor(Math.random()*3)];
-  document.getElementById('me').textContent = me;
-  document.getElementById('cpu').textContent = '🤔';
+    const el = {
+      meHand: document.getElementById('meHand'),
+      cpuHand: document.getElementById('cpuHand'),
+      chooseText: document.getElementById('chooseText'),
+      result: document.getElementById('result'),
+      startBtn: document.getElementById('startBtn'),
+      stopBtn: document.getElementById('stopBtn'),
+      retryBtn: document.getElementById('retryBtn'),
+      qrWrap: document.getElementById('qrWrap'),
+      qrcode: document.getElementById('qrcode'),
+      couponText: document.getElementById('couponText')
+    };
 
-  const countdownEl = document.getElementById('countdown');
-  countdownEl.textContent = '';
-
-  const steps = ['가위!', '바위!', '보!'];
-  let i = 0;
-
-  const timer = setInterval(() => {
-    countdownEl.textContent = steps[i];
-    i++;
-
-    if(i === steps.length){
-      clearInterval(timer);
-      revealResult(me, cpu);
+    function setPickDisabled(disabled){
+      document.querySelectorAll('.pick').forEach(b => b.disabled = disabled);
     }
-  }, 500);
-}
 
-function revealResult(me, cpu){
-  document.getElementById('cpu').textContent = cpu;
+    function choose(me){
+      if(rollingTimer) return; // 롤링 중에는 선택 변경 불가
+      selectedMe = me;
 
-  const outcome = judge(me, cpu);
-  const cpn = couponByOutcome[outcome];
-  const resultEl = document.getElementById('result');
+      el.meHand.innerHTML = svgHand(me);
+      el.chooseText.textContent = `당신의 선택은 ‘${labelOf(me)}’입니다. 롤링을 시작하세요.`;
+      el.result.className = 'result';
+      el.result.textContent = '준비되었습니다.';
 
-  resultEl.className = 'result';
-  if(outcome === 'WIN') resultEl.classList.add('win');
-  if(outcome === 'DRAW') resultEl.classList.add('draw');
-  if(outcome === 'LOSE') resultEl.classList.add('lose');
+      el.startBtn.disabled = false;
+      el.stopBtn.disabled = true;
+      el.retryBtn.disabled = false;
 
-  const text =
-    outcome === 'WIN' ? '🎉 승리! 축하드립니다' :
-    outcome === 'DRAW' ? '😄 무승부! 혜택을 드려요' :
-    '😉 참여 감사합니다!';
+      // QR 초기화
+      el.qrWrap.style.display = 'none';
+      el.qrcode.innerHTML = '';
+      el.couponText.textContent = '-';
+    }
 
-  resultEl.textContent = `${text} → ${cpn.name}`;
+    function startRolling(){
+      if(!selectedMe || rollingTimer) return;
 
-  // QR 생성 딜레이
-  setTimeout(() => {
-    const payload = buildQrPayload(cpn.code);
-    document.getElementById('couponText').textContent = payload;
-    document.getElementById('qrWrap').style.display = 'block';
+      // 버튼/선택 잠금
+      setPickDisabled(true);
+      el.startBtn.disabled = true;
+      el.stopBtn.disabled = false;
 
-    const el = document.getElementById('qrcode');
-    el.innerHTML = '';
-    new QRCode(el, {
-      text: payload,
-      width: 200,
-      height: 200
-    });
-  }, 600);
-}
+      el.result.className = 'result';
+      el.result.textContent = '컴퓨터가 고르는 중… 원하는 타이밍에 멈추기!';
 
+      // 롤링 시작
+      let idx = 0;
+      rollingTimer = setInterval(() => {
+        rollingValue = choices[idx % 3];
+        el.cpuHand.innerHTML = svgHand(rollingValue);
+        idx++;
+      }, 110);
+    }
+
+    function stopRolling(){
+      if(!rollingTimer) return;
+
+      clearInterval(rollingTimer);
+      rollingTimer = null;
+
+      const cpu = rollingValue; // 멈춘 순간의 값이 컴퓨터 선택
+      el.cpuHand.innerHTML = svgHand(cpu);
+
+      const outcome = judge(selectedMe, cpu);
+      const cpn = couponByOutcome[outcome];
+
+      el.result.className = 'result';
+      if(outcome === 'WIN') el.result.classList.add('win');
+      if(outcome === 'DRAW') el.result.classList.add('draw');
+      if(outcome === 'LOSE') el.result.classList.add('lose');
+
+      const text =
+        outcome === 'WIN' ? '🎉 승리! 축하드립니다' :
+        outcome === 'DRAW' ? '😄 무승부! 혜택을 드려요' :
+        '😉 아쉽지만 참여 감사합니다!';
+
+      el.result.textContent = `${text} (Guest: ${labelOf(selectedMe)} / 컴퓨터: ${labelOf(cpu)}) → ${cpn.name}`;
+
+      // QR 생성(등장 연출)
+      setTimeout(() => {
+        const payload = buildQrPayload(cpn.code);
+        el.couponText.textContent = payload;
+        el.qrWrap.style.display = 'block';
+        el.qrcode.innerHTML = '';
+        new QRCode(el.qrcode, { text: payload, width: 200, height: 200 });
+      }, 350);
+
+      // 버튼 상태
+      el.stopBtn.disabled = true;
+      el.retryBtn.disabled = false;
+
+      // 다시 선택 가능하도록 해제(원하시면 "다시하기"를 눌러야만 선택 가능하게 바꿀 수도 있음)
+      setPickDisabled(false);
+    }
+
+    function resetGame(){
+      if(rollingTimer){
+        clearInterval(rollingTimer);
+        rollingTimer = null;
+      }
+      selectedMe = null;
+
+      el.meHand.innerHTML = svgHand('scissors');
+      el.cpuHand.innerHTML = svgHand('paper');
+
+      el.chooseText.textContent = '가위바위보를 선택해 주세요';
+      el.result.className = 'result';
+      el.result.textContent = '대기 중입니다.';
+
+      el.startBtn.disabled = true;
+      el.stopBtn.disabled = true;
+      el.retryBtn.disabled = true;
+
+      setPickDisabled(false);
+
+      el.qrWrap.style.display = 'none';
+      el.qrcode.innerHTML = '';
+      el.couponText.textContent = '-';
+    }
   </script>
 </body>
 </html>
