@@ -29,6 +29,10 @@
     .small { font-size:12px; color:#777; margin-top:8px; line-height:1.4; }
     .footer { margin-top: 14px; font-size: 12px; color:#888; }
     .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:#eef; color:#224; font-size:12px; }
+.win { color:#1e8e3e; font-weight:800; }
+.draw { color:#1a73e8; font-weight:800; }
+.lose { color:#666; font-weight:800; }
+
   </style>
 </head>
 <body>
@@ -58,6 +62,8 @@
       </div>
 
       <div class="result" id="result">선택해 주세요.</div>
+      <div class="result" id="countdown"></div>
+
 
       <div class="qrWrap" id="qrWrap">
         <div class="qrCard">
@@ -119,30 +125,62 @@
     let qr; // QRCode instance
 
     function play(me){
-      const cpu = choices[Math.floor(Math.random()*3)];
-      document.getElementById('me').textContent = me;
-      document.getElementById('cpu').textContent = cpu;
+  const cpu = choices[Math.floor(Math.random()*3)];
+  document.getElementById('me').textContent = me;
+  document.getElementById('cpu').textContent = '🤔';
 
-      const outcome = judge(me, cpu);
-      const cpn = couponByOutcome[outcome];
+  const countdownEl = document.getElementById('countdown');
+  countdownEl.textContent = '';
 
-      const outcomeText = outcome === 'WIN' ? '승리!' : (outcome === 'DRAW' ? '무승부!' : '아쉽게 패배!');
-      document.getElementById('result').textContent = `${outcomeText} 👉 ${cpn.name}`;
+  const steps = ['가위!', '바위!', '보!'];
+  let i = 0;
 
-      // QR 생성
-      const payload = buildQrPayload(cpn.code);
-      document.getElementById('couponText').textContent = payload;
-      document.getElementById('qrWrap').style.display = 'block';
+  const timer = setInterval(() => {
+    countdownEl.textContent = steps[i];
+    i++;
 
-      // 기존 QR 지우고 새로 생성
-      const el = document.getElementById('qrcode');
-      el.innerHTML = '';
-      qr = new QRCode(el, {
-        text: payload,
-        width: 200,
-        height: 200,
-        correctLevel: QRCode.CorrectLevel.M
-      });
+    if(i === steps.length){
+      clearInterval(timer);
+      revealResult(me, cpu);
+    }
+  }, 500);
+}
+
+function revealResult(me, cpu){
+  document.getElementById('cpu').textContent = cpu;
+
+  const outcome = judge(me, cpu);
+  const cpn = couponByOutcome[outcome];
+  const resultEl = document.getElementById('result');
+
+  resultEl.className = 'result';
+  if(outcome === 'WIN') resultEl.classList.add('win');
+  if(outcome === 'DRAW') resultEl.classList.add('draw');
+  if(outcome === 'LOSE') resultEl.classList.add('lose');
+
+  const text =
+    outcome === 'WIN' ? '🎉 승리! 축하드립니다' :
+    outcome === 'DRAW' ? '😄 무승부! 혜택을 드려요' :
+    '😉 참여 감사합니다!';
+
+  resultEl.textContent = `${text} → ${cpn.name}`;
+
+  // QR 생성 딜레이
+  setTimeout(() => {
+    const payload = buildQrPayload(cpn.code);
+    document.getElementById('couponText').textContent = payload;
+    document.getElementById('qrWrap').style.display = 'block';
+
+    const el = document.getElementById('qrcode');
+    el.innerHTML = '';
+    new QRCode(el, {
+      text: payload,
+      width: 200,
+      height: 200
+    });
+  }, 600);
+}
+
 
       // 운영 문구(원하시면 수정)
       document.getElementById('couponRule').textContent =
